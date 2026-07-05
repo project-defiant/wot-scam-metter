@@ -1,0 +1,38 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum AssessmentCategory {
+  WG_SERVER_LAG
+  SHELL_DISAPPEARED
+  PLAYER_CHEATING
+}
+
+model ReplayCase {
+  id               String       @id @default(cuid())
+  originalFilename String
+  storedPath       String
+  fileSize         Int
+  createdAt        DateTime     @default(now())
+  assessments      Assessment[]
+
+  @@index([createdAt])
+}
+
+model Assessment {
+  id                String             @id @default(cuid())
+  replayCaseId      String
+  category          AssessmentCategory
+  comment           String?
+  createdAt         DateTime           @default(now())
+  clientFingerprint String?
+  replayCase        ReplayCase         @relation(fields: [replayCaseId], references: [id], onDelete: Cascade)
+
+  @@index([replayCaseId, createdAt])
+  @@index([clientFingerprint, createdAt])
+}
